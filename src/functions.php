@@ -174,3 +174,37 @@ function array_includes(array $array, $search, $from_index = null): bool
 
     return false;
 }
+
+/**
+ * @param array $array
+ * @return string
+ */
+function array_to_source(array $array): string
+{
+    $source = '[';
+    $length = count($array);
+    $index = 0;
+    $is_list = array_is_list($array);
+
+    foreach ($array as $key => $value) {
+        if (!$is_list) {
+            $source .= var_export($key, true);
+            $source .= ' => ';
+        }
+
+        if (is_array($value)) {
+            $source .= array_to_source($value);
+        } else {
+            $source .= var_export($value, true);
+        }
+
+        if ($index + 1 < $length) {
+            $source .= ', ';
+        }
+        $index++;
+    }
+
+    $source .= ']';
+
+    return $source;
+}
