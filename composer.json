@@ -1,0 +1,31 @@
+{
+  "version": "0.0.1",
+  "name": "zheltikov/php-stdlib",
+  "type": "library",
+  "autoload": {
+    "psr-4": {
+      "Zheltikov\\StdLib\\": "src/"
+    },
+    "files": [
+      "src/functions.php"
+    ]
+  },
+  "require": {
+    "php": ">=7.0"
+  },
+  "require-dev": {
+    "nazar-pc/phpt-tests-runner": "^1.4"
+  },
+  "suggest": {
+  },
+  "authors": [
+    {
+      "name": "Max Zheltikov",
+      "homepage": "https://github.com/zheltikov"
+    }
+  ],
+  "license": "MIT",
+  "scripts": {
+    "test": "phpt-tests-runner tests/"
+  }
+}
