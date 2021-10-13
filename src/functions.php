@@ -208,3 +208,18 @@ function array_to_source(array $array): string
 
     return $source;
 }
+
+/**
+ * @param array $entries
+ * @return array
+ */
+function array_from_entries(array $entries): array
+{
+    $array = [];
+
+    foreach ($entries as [$key, $value]) {
+        $array[$key] = $value;
+    }
+
+    return $array;
+}
