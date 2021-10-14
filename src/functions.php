@@ -5,6 +5,7 @@ namespace Zheltikov\StdLib;
 use Generator;
 use OutOfBoundsException;
 use RangeException;
+use Throwable;
 
 /**
  * @param array $array
@@ -285,4 +286,347 @@ function number_trunc(float $number): int
 function math_random(): float
 {
     return random_int(0, PHP_INT_MAX) / PHP_INT_MAX;
+}
+
+/**
+ * @param \Throwable $e
+ */
+function print_throwable(Throwable $e): void
+{
+    echo get_class($e) . ': ' . $e->getMessage() . "\n";
+}
+
+/**
+ * @param int $num
+ * @param array $args
+ * @param string $name
+ */
+function assert_num_args(int $num, array $args, string $name): void
+{
+    if ($num !== count($args)) {
+        die(sprintf('Wrong argument count for %s().', $name));
+    }
+}
+
+/**
+ * @param string $lines
+ * @return string
+ */
+function rtrim_lines(string $lines): string
+{
+    $lines = explode("\n", $lines);
+    $lines = array_map('rtrim', $lines);
+    return implode("\n", $lines);
+}
+
+/**
+ * @param string $dir
+ * @param int $permissions
+ */
+function ensure_dir_exists(string $dir, int $permissions = 0755): void
+{
+    if (is_dir($dir) === false) {
+        if (mkdir($dir, $permissions, true) === false) {
+            throw new FileSystemException(sprintf('Failed to create %s directory.', $dir));
+        }
+    }
+}
+
+/**
+ * @param string $cmd
+ * @return string
+ */
+function exec_cmd(string $cmd): string
+{
+    $output = trim(shell_exec($cmd . ' 2>&1'));
+
+    if ($output !== '') {
+        printf("> %s\n%s", $cmd, $output);
+    }
+
+    return $output;
+}
+
+/**
+ * @param string $location
+ */
+function redirect(string $location): void
+{
+    header('Location: ' . $location);
+    exit();
+}
+
+/**
+ * @param mixed $value
+ * @param mixed $default
+ * @return mixed
+ */
+function empty_default($value, $default)
+{
+    return empty($value) ? $default : $value;
+}
+
+/**
+ * @param mixed $value
+ * @param mixed $default
+ * @return mixed
+ */
+function isset_default(&$value, $default)
+{
+    return isset($value) ? $value : $default;
+}
+
+/**
+ * @param mixed $value
+ * @param mixed $default
+ * @return mixed|string
+ */
+function ie_def(&$value, $default)
+{
+    $value_2 = isset($value) ? trim($value) : $default;
+    return empty($value_2) ? $default : $value_2;
+}
+
+/**
+ * @param string $source
+ * @param string $target
+ * @return int
+ */
+function download_file(string $source, string $target): int
+{
+    return file_put_contents($target, file_get_contents($source));
+}
+
+/**
+ * @param mixed $expr
+ * @param mixed $def
+ * @return mixed
+ */
+function false_def($expr, $def)
+{
+    if ($expr === false) {
+        return $def;
+    }
+    return $expr;
+}
+
+/**
+ * @param bool $undefined
+ * @return string
+ */
+function random_js_falsy(bool $undefined = false): string
+{
+    $array = ['""', '0', 'false', 'null'];
+    if ($undefined) {
+        $array[] = 'undefined';
+    }
+    return $array[array_rand($array)];
+}
+
+/**
+ * @param string $algo
+ * @param int $length
+ * @return string
+ * @throws \Exception
+ */
+function get_a_nonce(string $algo = 'crc32', int $length = 4): string
+{
+    static $nonces = [];
+
+    do {
+        $nonce = substr(
+            base_convert(
+                hash($algo, math_random()),
+                16,
+                36
+            ),
+            0,
+            $length
+        );
+    } while (in_array($nonce, $nonces));
+
+    $nonces[] = $nonce;
+
+    return $nonce;
+}
+
+/**
+ * @param int $count
+ * @param callable $action
+ * @return bool
+ */
+function repeat(int $count, callable $action): bool
+{
+    for ($i = 0; $i < $count; $i++) {
+        if (call_user_func($action, $i) === false) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+/**
+ * @param array $items
+ * @param callable $action
+ * @return bool
+ */
+function do_each(array $items, callable $action): bool
+{
+    foreach ($items as $key => $value) {
+        if (call_user_func($action, $key, $value) === false) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+/**
+ * @param array $one
+ * @param array $two
+ * @return array
+ */
+function deep_merge(array $one, array $two): array
+{
+    $three = $one;
+    foreach ($two as $key => $value) {
+        if (is_array($one[$key] ?? null) && is_array($value)) {
+            $three[$key] = deep_merge($one[$key], $value);
+        } else {
+            $three[$key] = $value;
+        }
+    }
+
+    return $three;
+}
+
+/**
+ * @param array $data
+ * @return \stdClass
+ */
+function objectify(array $data = []): \stdClass
+{
+    $object = new \stdClass();
+
+    foreach ($data as $key => $value) {
+        $object->{$key} = $value;
+    }
+
+    return $object;
+}
+
+/**
+ * @param array $one
+ * @return \stdClass
+ */
+function deep_objectify(array $one): \stdClass
+{
+    $two = [];
+
+    foreach ($one as $key => $value) {
+        if (is_array($value) && array_is_associative($value)) {
+            $two[$key] = objectify($value);
+        } else {
+            $two[$key] = $value;
+        }
+    }
+
+    return objectify($two);
+}
+
+/**
+ * @param string $email
+ * @return array
+ */
+function email_encode(string $email): array
+{
+    return array_map('base64_encode', explode('@', $email));
+}
+
+/**
+ * @param array $encoded
+ * @return string
+ */
+function email_decode(array $encoded): string
+{
+    return implode('@', array_map('base64_decode', $encoded));
+}
+
+/**
+ * @param array $array
+ * @return bool
+ */
+function array_is_associative(array $array): bool
+{
+    if ([] === $array) {
+        return false;
+    }
+
+    return array_keys($array) !== range(0, count($array) - 1);
+}
+
+/**
+ * @param array $array
+ * @return array
+ */
+function array_shuffle(array $array): array
+{
+    shuffle($array);
+    return $array;
+}
+
+/**
+ * @param array $input
+ * @param int $num
+ * @param bool $preserve_keys
+ * @return array|mixed
+ */
+function array_random(array $input, int $num = 1, bool $preserve_keys = false)
+{
+    $result = [];
+    $keys = array_rand($input, $num);
+    $keys = is_array($keys) ? $keys : [$keys];
+
+    foreach ($keys as $k) {
+        $result[$preserve_keys ? $k : count($result)] = $input[$k];
+    }
+
+    return count($result) === 1 ? $result[0] : $result;
+}
+
+/**
+ * @return array
+ */
+function get_terminal_size(): array
+{
+    // TODO: do some error checking here
+    // TODO: be able to pass some "default" value, i.e. 80x24
+    // TODO: add a check for another OS, e.g. Windows
+
+    $column_output = [];
+    exec('tput cols', $column_output);
+
+    $line_output = [];
+    exec('tput lines', $line_output);
+
+    return [
+        trim($column_output[0]),
+        trim($line_output[0]),
+    ];
+}
+
+/**
+ * @param string $prompt
+ * @param int $length
+ * @param string $ending
+ * @return string
+ */
+function read_line(string $prompt = '', int $length = 1024, string $ending = "\n"): string
+{
+    if ($prompt !== '') {
+        echo $prompt;
+    }
+    
+    return stream_get_line(STDIN, $length, $ending);
 }
