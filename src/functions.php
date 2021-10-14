@@ -4,6 +4,7 @@ namespace Zheltikov\StdLib;
 
 use Generator;
 use OutOfBoundsException;
+use RangeException;
 
 /**
  * @param array $array
@@ -222,4 +223,66 @@ function array_from_entries(array $entries): array
     }
 
     return $array;
+}
+
+/**
+ * @param array $array
+ * @param int $depth
+ * @return array
+ */
+function array_flat(array $array, int $depth = 1): array
+{
+    return $depth > 0
+        ? array_reduce(
+            $array,
+            function ($carry, $value) use ($depth) {
+                return array_concat(
+                    $carry,
+                    is_array($value)
+                        ? array_flat($value, $depth - 1)
+                        : $value
+                );
+            },
+            []
+        )
+        : $array;
+}
+
+/**
+ * @param float $number
+ * @param int $digits
+ * @return float
+ */
+function number_to_fixed(float $number, int $digits): float
+{
+    if ($digits < 0) {
+        throw new RangeException('The $digits argument must be positive');
+    }
+
+    $mover = pow(10, $digits);
+    $str = (string) ($number * $mover);
+
+    $capped = $number < 0
+        ? ceil($str)
+        : floor($str);
+
+    return $capped / $mover;
+}
+
+/**
+ * @param float $number
+ * @return int
+ */
+function number_trunc(float $number): int
+{
+    return (int) $number;
+}
+
+/**
+ * @return float
+ * @throws \Exception
+ */
+function math_random(): float
+{
+    return random_int(0, PHP_INT_MAX) / PHP_INT_MAX;
 }
