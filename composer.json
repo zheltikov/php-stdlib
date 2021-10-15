@@ -7,6 +7,7 @@
       "Zheltikov\\StdLib\\": "src/"
     },
     "files": [
+      "src/constants.php",
       "src/functions.php"
     ]
   },

@@ -645,7 +645,7 @@ function openssl_random_pseudo_bytes(int $length, bool $raw = false): string
         $data = stream_get_contents($handle);
         pclose($handle);
     }
-    
+
     return $raw ? $data : bin2hex($data);
 }
 
@@ -728,4 +728,35 @@ function hash_algos_longest(): int
     }
 
     return $longest;
+}
+
+// -----------------------------------------------------------------------------
+
+/**
+ * @param string|null $version
+ * @param bool $min
+ * @return string
+ */
+function jquery_google_cdn_link(?string $version = null, bool $min = JQUERY_MIN): string
+{
+    return sprintf(
+        'https://ajax.googleapis.com/ajax/libs/jquery/%s/jquery%s.js',
+        $version ?? JQUERY_VERSION,
+        $min ? '.min' : ''
+    );
+}
+
+/**
+ * @param string|null $version
+ * @param bool $min
+ * @return string
+ */
+function jquery_cdn_script(?string $version = null, bool $min = JQUERY_MIN): string
+{
+    return sprintf(
+        '<script src="%s"></script>',
+        htmlspecialchars(
+            jquery_google_cdn_link($version ?? JQUERY_VERSION, $min)
+        )
+    );
 }
