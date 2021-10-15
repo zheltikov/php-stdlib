@@ -12,12 +12,14 @@
     ]
   },
   "require": {
-    "php": ">=7.1"
+    "php": ">=7.1",
+    "ext-json": "*"
   },
   "require-dev": {
     "nazar-pc/phpt-tests-runner": "^1.4"
   },
   "suggest": {
+    "ext-openssl": "*"
   },
   "authors": [
     {
