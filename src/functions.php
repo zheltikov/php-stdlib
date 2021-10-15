@@ -760,3 +760,68 @@ function jquery_cdn_script(?string $version = null, bool $min = JQUERY_MIN): str
         )
     );
 }
+
+/**
+ * @param $value
+ * @param int $options
+ * @param int $depth
+ * @return string
+ */
+function json_colorize($value, int $options = 0, int $depth = 512): string
+{
+    $json = json_encode(
+        json_decode(
+            json_encode($value, $options, $depth)
+        ),
+        JSON_PRETTY_PRINT
+    );
+
+    // TODO: find a prettier way of doing this
+
+    // Object string key
+    $pattern = '/("(.+)?":)/imU';
+    $replacement = '<span style="color:#75507b;">"$2"</span>:';
+    $json = preg_replace($pattern, $replacement, $json);
+
+    // String object value
+    $pattern = '/(: "(.+)?")/imU';
+    $replacement = ': <span style="color:#cc0000;">"$2"</span>';
+    $json = preg_replace($pattern, $replacement, $json);
+
+    // String value
+    $pattern = '/^((\s+)"(.+)?")/imU';
+    $replacement = '$2<span style="color:#cc0000;">"$3"</span>';
+    $json = preg_replace($pattern, $replacement, $json);
+
+    // Boolean false
+    $pattern = '/^((\s+)false)/imU';
+    $replacement = '$2<span style="color:#f57900;">false</span>';
+    $json = preg_replace($pattern, $replacement, $json);
+
+    // Boolean true
+    $pattern = '/^((\s+)true)/imU';
+    $replacement = '$2<span style="color:#f57900;">true</span>';
+    $json = preg_replace($pattern, $replacement, $json);
+
+    // Number, why can it contain spaces?
+    $pattern = '/^((\s+)([0-9 \\.]*?))/imU';
+    $replacement = '$2<span style="color:#3465a4;">$3</span>';
+    $json = preg_replace($pattern, $replacement, $json);
+
+    // Object value boolean false
+    $pattern = ': false';
+    $replacement = ': <span style="color:#f57900;">false</span>';
+    $json = str_replace($pattern, $replacement, $json);
+
+    // Object value boolean true
+    $pattern = ': true';
+    $replacement = ': <span style="color:#f57900;">true</span>';
+    $json = str_replace($pattern, $replacement, $json);
+
+    // Number, why can it contain spaces?
+    $pattern = '/(: ([0-9 \\.]*?))/imU';
+    $replacement = ': <span style="color:#3465a4;">$2</span>';
+    $json = preg_replace($pattern, $replacement, $json);
+
+    return '<pre style="font-size: 16px; color: inherit; text-align: left;">' . $json . '</pre>';
+}
