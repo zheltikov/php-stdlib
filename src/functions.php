@@ -627,6 +627,105 @@ function read_line(string $prompt = '', int $length = 1024, string $ending = "\n
     if ($prompt !== '') {
         echo $prompt;
     }
-    
+
     return stream_get_line(STDIN, $length, $ending);
+}
+
+/**
+ * @param int $length
+ * @param bool $raw
+ * @return string
+ */
+function openssl_random_pseudo_bytes(int $length, bool $raw = false): string
+{
+    if (function_exists('\openssl_random_pseudo_bytes')) {
+        $data = \openssl_random_pseudo_bytes($length);
+    } else {
+        $handle = popen('/usr/bin/openssl rand ' . $length, 'r');
+        $data = stream_get_contents($handle);
+        pclose($handle);
+    }
+    
+    return $raw ? $data : bin2hex($data);
+}
+
+/**
+ * @param int $length
+ * @return string
+ */
+function base64_random_bytes(int $length): string
+{
+    return base64_encode(openssl_random_pseudo_bytes($length, true));
+}
+
+/**
+ * @param string $data
+ * @param bool $trim
+ * @return string
+ */
+function base64_encode(string $data, bool $trim = true): string
+{
+    $encoded = \base64_encode($data);
+    return $trim
+        ? rtrim($encoded, '=')
+        : $encoded;
+}
+
+/**
+ * @param string $data
+ * @param bool $strict
+ * @return string
+ */
+function base64_decode(string $data, bool $strict = false): string
+{
+    return \base64_decode($data, $strict);
+}
+
+/**
+ * @param bool $raw_output
+ * @return string
+ * @throws \Exception
+ */
+function random_md5(bool $raw_output = false): string
+{
+    return random_hash('md5', $raw_output);
+}
+
+/**
+ * @param string $algo
+ * @param bool $raw_output
+ * @return string
+ * @throws \Exception
+ */
+function random_hash(string $algo, bool $raw_output = false): string
+{
+    return hash(
+        $algo,
+        openssl_random_pseudo_bytes(
+            random_int(0, hash_algos_longest()),
+            true
+        ),
+        $raw_output
+    );
+}
+
+/**
+ * @return int
+ */
+function hash_algos_longest(): int
+{
+    static $longest = null;
+
+    if ($longest === null) {
+        $longest = 0;
+        $hash_algos = hash_algos();
+        foreach ($hash_algos as $hash_algo) {
+            $length = strlen(hash($hash_algo, ''));
+            if ($length > $longest) {
+                $longest = $length;
+            }
+        }
+    }
+
+    return $longest;
 }
