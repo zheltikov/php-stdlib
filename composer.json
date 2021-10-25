@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "name": "zheltikov/php-stdlib",
   "type": "library",
   "autoload": {
@@ -7,16 +7,19 @@
       "Zheltikov\\StdLib\\": "src/"
     },
     "files": [
+      "src/constants.php",
       "src/functions.php"
     ]
   },
   "require": {
-    "php": ">=7.1"
+    "php": ">=7.1",
+    "ext-json": "*"
   },
   "require-dev": {
     "nazar-pc/phpt-tests-runner": "^1.4"
   },
   "suggest": {
+    "ext-openssl": "*"
   },
   "authors": [
     {
