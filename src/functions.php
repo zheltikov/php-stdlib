@@ -825,3 +825,82 @@ function json_colorize($value, int $options = 0, int $depth = 512): string
 
     return '<pre style="font-size: 16px; color: inherit; text-align: left;">' . $json . '</pre>';
 }
+
+/**
+ * @param string $string
+ * @return int
+ */
+function strlen(string $string): int
+{
+    if (function_exists('mb_strlen')) {
+        return mb_strlen($string);
+    }
+    return \strlen($string);
+}
+
+/**
+ * @param string $s
+ * @return string
+ */
+function css_url(string $s): string
+{
+    $unquoted = str_replace(
+        ['(', ')', "\n", "\t", ' ', "'", '"', ','],
+        ['\\(', '\\)', "\\\n", "\\\t", '\\ ', "\\'", '\\"', '\\,'],
+        $s
+    );
+
+    $quoted_s = "'" . str_replace(
+            ["'", "\n"],
+            ["\\'", "\\\n"],
+            $s
+        ) . "'";
+
+    $quoted_d = '"' . str_replace(
+            ['"', "\n"],
+            ['\\"', "\\\n"],
+            $s
+        ) . '"';
+
+    $variants = [
+        $unquoted,
+        $quoted_s,
+        $quoted_d,
+    ];
+    usort(
+        $variants,
+        function (string $a, string $b): int {
+            return strlen($a) - strlen($b);
+        }
+    );
+
+    return 'url(' . $variants[0] . ')';
+}
+
+/**
+ * @param string $string
+ * @param string $separator
+ * @param int $index
+ * @return string
+ */
+function inject_every_index(string $string, string $separator, int $index): string
+{
+    $output = '';
+    $length = strlen($string);
+    for ($j = 0; $j < $length; $j++) {
+        if ($j % $index === 0 && $j !== 0) {
+            $output .= $separator;
+        }
+        $output .= $string[$j];
+    }
+    return $output;
+}
+
+/**
+ * @param string $string
+ * @return string
+ */
+function normalize_new_lines(string $string): string
+{
+    return preg_replace("/\\r\\n?/", "\n", $string);
+}
