@@ -1007,3 +1007,15 @@ function check_segments(
     // Good, all segments satisfy the conditions
     return [true, null];
 }
+
+/**
+ * @param float $lat
+ * @param float $lon
+ * @return bool
+ */
+function check_coordinates(float $lat, float $lon): bool
+{
+    $lat_valid = -90 <= $lat && $lat <= 90;
+    $lon_valid = -180 <= $lon && $lon <= 180;
+    return $lat_valid && $lon_valid;
+}
