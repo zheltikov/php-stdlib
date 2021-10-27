@@ -914,7 +914,7 @@ function normalize_new_lines(string $string): string
  * @param float $min_gap
  * @param float $max_gap
  * @param bool $sort_input
- * @return array
+ * @return array{bool, ?array-key}
  */
 function check_segments(
     array &$input_segments,
