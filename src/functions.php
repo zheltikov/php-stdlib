@@ -904,3 +904,106 @@ function normalize_new_lines(string $string): string
 {
     return preg_replace("/\\r\\n?/", "\n", $string);
 }
+
+/**
+ * @param array $input_segments
+ * @param callable $min_extractor
+ * @param callable $max_extractor
+ * @param float $min_step
+ * @param float $max_step
+ * @param float $min_gap
+ * @param float $max_gap
+ * @param bool $sort_input
+ * @return array
+ */
+function check_segments(
+    array &$input_segments,
+    callable $min_extractor,
+    callable $max_extractor,
+    float $min_step,
+    float $max_step,
+    float $min_gap,
+    float $max_gap,
+    bool $sort_input = true
+): array {
+    if ($sort_input) {
+        $segments =& $input_segments;
+    } else {
+        $segments = $input_segments;
+    }
+
+    // Sort the input array so that the segments are in ascending order
+    usort(
+        $segments,
+        function ($a, $b) use ($max_extractor, $min_extractor): float {
+            /** @var int|float $a_min */
+            $a_min = $min_extractor($a);
+
+            /** @var int|float $b_min */
+            $b_min = $min_extractor($b);
+
+            /** @var int|float $min_diff */
+            $min_diff = $a_min - $b_min;
+
+            // First, sort by the min value
+            if ((float) $min_diff !== (float) 0) {
+                return $min_diff;
+            }
+
+            /** @var int|float $a_max */
+            $a_max = $max_extractor($a);
+
+            /** @var int|float $b_max */
+            $b_max = $max_extractor($b);
+
+            // Then, sort by the max value
+            return $a_max - $b_max;
+        }
+    );
+
+    /** @var int|float|null $prev_max */
+    $prev_max = null;
+    $continue = true;
+
+    // Iterate through the segments and check their lengths and boundaries
+    foreach ($segments as $index => $segment) {
+        /** @var int|float $min */
+        $min = $min_extractor($segment);
+
+        /** @var int|float $max */
+        $max = $max_extractor($segment);
+
+        /** @var int|float $max */
+        $step = $max - $min;
+
+        // Check the segment length
+        if ($step < $min_step || $step > $max_step) {
+            // Bad, the length of the current segment does not satisfy the
+            // conditions
+            return [false, $index];
+        }
+
+        // Skip the first segment, as we cannot check it against any
+        // previous segment
+        if ($continue) {
+            $continue = false;
+            $prev_max = $max;
+            continue;
+        }
+
+        /** @var int|float $gap */
+        $gap = $min - $prev_max;
+
+        // Check the boundaries of the current segment with the previous one
+        if ($gap < $min_gap || $gap > $max_gap) {
+            // Bad, the gap between the segments does not satisfy the
+            // conditions
+            return [false, $index];
+        }
+
+        $prev_max = $max;
+    }
+
+    // Good, all segments satisfy the conditions
+    return [true, null];
+}
