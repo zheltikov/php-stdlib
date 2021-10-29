@@ -1019,3 +1019,18 @@ function check_coordinates(float $lat, float $lon): bool
     $lon_valid = -180 <= $lon && $lon <= 180;
     return $lat_valid && $lon_valid;
 }
+
+/**
+ * @param float $a_x
+ * @param float $a_y
+ * @param float $b_x
+ * @param float $b_y
+ * @return float
+ */
+function euclidean_distance(float $a_x, float $a_y, float $b_x, float $b_y): float
+{
+    $x_delta = $a_x - $b_x;
+    $y_delta = $a_y - $b_y;
+
+    return sqrt(pow($x_delta, 2) + pow($y_delta, 2));
+}
