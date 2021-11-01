@@ -1042,7 +1042,11 @@ function euclidean_distance(float $a_x, float $a_y, float $b_x, float $b_y): flo
  */
 function array_extract_keys(array $array, string ...$keys): array
 {
-    $result = [[], array_fill(0, count($keys), null)];
+    $result = [[]];
+
+    foreach ($keys as $ignored) {
+        $result[] = null;
+    }
 
     foreach ($array as $source_key => $value) {
         $found = false;
